@@ -1,3 +1,3 @@
-from .estrategias import IAStrategy, IAFacil, IAMedio
+from .estrategias import IAFacil, IAMedio, IADificil, IAStrategy
 
-__all__ = ['IAStrategy', 'IAFacil', 'IAMedio']
+__all__ = ['IAFacil', 'IAMedio', 'IADificil', 'IAStrategy']
