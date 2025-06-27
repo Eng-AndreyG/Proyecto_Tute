@@ -12,12 +12,12 @@ class MenuPrincipal:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "salir"
-        
+            
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.boton_jugar.clickeado(pygame.mouse.get_pos()):
                     return {
-                        'estado': 'partida',
-                        'dificultad': self.selector.dificultad  # Asegúrate que esto devuelve 'fácil', 'medio' o 'difícil'
+                        "nuevo_estado": "partida",  # Cambiado de "estado" a "nuevo_estado"
+                        "dificultad": self.selector.dificultad
                     }
                 self.selector.manejar_click(pygame.mouse.get_pos())
         return None
@@ -25,14 +25,9 @@ class MenuPrincipal:
     def dibujar(self):
         self.pantalla.fill((20, 20, 50))
         
-        # Título
         titulo = self.fuente_titulo.render("TUTE", True, (255, 215, 0))
-        self.pantalla.blit(titulo, (
-            (self.pantalla.get_width() - titulo.get_width()) // 2, 
-            150
-        ))
+        self.pantalla.blit(titulo, ((self.pantalla.get_width() - titulo.get_width()) // 2, 150))
         
-        # Botón y selector
         self.boton_jugar.dibujar(self.pantalla)
         self.selector.dibujar(self.pantalla)
         

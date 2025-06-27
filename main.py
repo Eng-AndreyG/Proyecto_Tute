@@ -1,4 +1,3 @@
-# main.py
 from src.frontend.gui import GUI
 
 if __name__ == "__main__":

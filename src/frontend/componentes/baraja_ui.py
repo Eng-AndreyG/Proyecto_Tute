@@ -1,23 +1,24 @@
 import pygame
-from pathlib import Path
+import os
 
 class BarajaUI:
     def __init__(self, x: int, y: int):
         self.x = x
-        self.y = y
-        self.cartas = []
-        self._cargar_imagenes()
+        self.y = y + 250  # 200px más abajo (mitad de pantalla)
+        self.reverso = self._cargar_imagen()
         
-    def _cargar_imagenes(self):
-        self.reverso = pygame.image.load("assets/imagenes/back.jpg")
-        self.reverso = pygame.transform.scale(self.reverso, (100, 150))
-        
-    def dibujar(self, pantalla):
-        # Dibuja cartas apiladas con efecto 3D
-        for i in range(5):
-            pantalla.blit(self.reverso, (self.x + i*2, self.y + i*2))
+    def _cargar_imagen(self):
+        try:
+            ruta = os.path.join("assets", "imagenes", "back.jpg")
+            imagen = pygame.image.load(ruta)
+            return pygame.transform.scale(imagen, (100, 150))
+        except Exception as e:
+            print(f"Error cargando reverso: {str(e)}")
+            superficie = pygame.Surface((100, 150))
+            superficie.fill((30, 30, 120))  # Azul oscuro
+            return superficie
     
-    def repartir_animacion(self, carta_ui, objetivo_x, objetivo_y):
-        # Lógica para animar el reparto
-        carta_ui.objetivo_x = objetivo_x
-        carta_ui.objetivo_y = objetivo_y
+    def dibujar(self, pantalla):
+        # Dibujar 3 cartas apiladas
+        for i in range(3):
+            pantalla.blit(self.reverso, (self.x + i*2, self.y + i*2))
