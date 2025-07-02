@@ -1,3 +1,4 @@
+from src.backend.baza import Baza
 from .estados.estado_repartiendo import EstadoRepartiendo
 from .estados.estado_jugando import EstadoJugando
 from .estados.estado_fin import EstadoFinPartida
@@ -9,41 +10,53 @@ from .reglas import Reglas
 class Juego:
     _instance = None
 
-    def __new__(cls): # Patrón Singleton
+    def __new__(cls):
         if not cls._instance:
             cls._instance = super().__new__(cls)
             cls._instance.inicializar()
         return cls._instance
 
-    def inicializar(self): # Inicializa el juego 
+    def inicializar(self):
         self.baraja = Baraja()
         self.jugador_humano = JugadorHumano("Humano")
-        self.jugador_ia = JugadorIA("IA")
+        self.jugador_ia = JugadorIA("medio")
         self.palo_triunfo = None
         self.baza_actual = Baza()
-        self._observers = []
-        self._estado = EstadoRepartiendo()  # Estado inicial
+        self._observers = []  # Inicializar la lista de observadores
 
-    def cambiar_estado(self, nuevo_estado): # Cambia el estado del juego
-        self._estado = nuevo_estado
-        self.notificar(f"estado_cambiado:{nuevo_estado.__class__.__name__}")
+    def __init__(self):
+        self._observers = []  # Asegurar que existe
+        self.inicializar()
 
-    def manejar_evento(self, evento: str): # Maneja eventos del juego
-        self._estado.manejar_evento(self, evento)
-
-    def add_observer(self, observer): # Añade un observador al juego
+    def add_observer(self, observer):
+        """Añade un observador que debe tener método actualizar(evento)."""
         self._observers.append(observer)
 
-    def notificar(self, evento: str): # Notifica a todos los observadores
+    def notificar(self, evento: str):
+        """Notifica a todos los observadores."""
         for obs in self._observers:
-            obs.actualizar(evento)
+            try:
+                obs.actualizar(evento)
+            except Exception as e:
+                print(f"Error notificando a observador: {e}")
 
-    def iniciar_partida(self): # Inicia una nueva partida
+    def iniciar_partida(self):
+        # Inicialización básica
+        self.baraja.inicializar()
         self.baraja.barajar()
         self.jugador_humano.mano = self.baraja.repartir(8)
         self.jugador_ia.mano = self.baraja.repartir(8)
-        self.palo_triunfo = self.baraja.cartas.pop().palo
-        self.manejar_evento("cartas_repartidas")  # Cambia a EstadoJugando
+
+        # Establecer triunfo
+        self.palo_triunfo = self.baraja.cartas[-1].palo if self.baraja.cartas else "Oros"
+        if hasattr(self.jugador_ia.estrategia, 'actualizar_triunfo'):
+            self.jugador_ia.estrategia.actualizar_triunfo(self.palo_triunfo)
+
+        # Inicializar baza
+        self.baza_actual = Baza()
+        self.baza_actual.palo_triunfo = self.palo_triunfo
+
+        # Notificar
         self.notificar("partida_iniciada")
 
     def jugar_turno_humano(self, carta_idx: int) -> str: # Juega un turno del jugador humano
@@ -73,8 +86,11 @@ class Juego:
             return ganador
         return None
 
-    def _verificar_fin_partida(self) -> bool: # Verifica si la partida ha terminado
-        return len(self.jugador_humano.mano) == 0
+    def _verificar_fin_partida(self) -> bool:
+        """Verifica si la partida debe terminar (sin cartas en mano y no hay más para repartir)"""
+        return (len(self.jugador_humano.mano) == 0 and 
+                len(self.jugador_ia.mano) == 0 and
+                len(self.baraja.cartas) == 0)
     
     @property
     def estado_actual(self) -> str:

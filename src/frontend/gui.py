@@ -29,17 +29,20 @@ class GUI:
             self.estado_actual = FinPartida(self.pantalla, ganador)
 
     def manejar_transicion(self, resultado):
-        """
-        Maneja la transición entre estados según el resultado devuelto
-        """
         if resultado == "salir":
             return False
-        elif isinstance(resultado, dict):
-            if "nuevo_estado" in resultado:
-                self.cambiar_estado(**resultado)
-            elif "estado" in resultado:  # Para compatibilidad
-                resultado["nuevo_estado"] = resultado.pop("estado")
-                self.cambiar_estado(**resultado)
+        
+        if isinstance(resultado, dict):
+            try:
+                if "nuevo_estado" in resultado:
+                    self.cambiar_estado(**resultado)
+                elif "estado" in resultado:  # Para compatibilidad
+                    resultado["nuevo_estado"] = resultado.pop("estado")
+                    self.cambiar_estado(**resultado)
+            except Exception as e:
+                print(f"Error en transición: {e}")
+                return False
+        
         return True
 
     def run(self):
