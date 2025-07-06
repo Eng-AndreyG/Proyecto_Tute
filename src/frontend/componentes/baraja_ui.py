@@ -4,7 +4,7 @@ import os
 class BarajaUI:
     def __init__(self, x: int, y: int):
         self.x = x
-        self.y = y + 250  
+        self.y = y  # Usar la posición original sin offset
         self.reverso = self._cargar_imagen()
         
     def _cargar_imagen(self):

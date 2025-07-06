@@ -26,11 +26,34 @@ class GUI:
             self.estado_actual = Partida(self.pantalla, self.dificultad_actual)
         elif nuevo_estado == "fin":
             ganador = kwargs.get('ganador', 'humano')
-            self.estado_actual = FinPartida(self.pantalla, ganador)
+            puntos_humano = kwargs.get('puntos_humano', 0)
+            puntos_ia = kwargs.get('puntos_ia', 0)
+            mensaje = kwargs.get('mensaje', None)
+            self.estado_actual = FinPartida(self.pantalla, ganador, puntos_humano, puntos_ia, mensaje)
 
     def manejar_transicion(self, resultado):
         if resultado == "salir":
             return False
+        
+        # Manejar reinicio especial para limpiar el singleton
+        if resultado == "reiniciar":
+            # Forzar nueva instancia del juego limpiando los singletons
+            from src.backend.juego import Juego
+            from src.backend.baraja import Baraja
+            Juego._instance = None
+            Baraja._instance = None
+            self.cambiar_estado("partida", dificultad=self.dificultad_actual)
+            return True
+        
+        # Manejar ir al menú principal
+        if resultado == "menu":
+            # Limpiar los singletons también cuando se va al menú
+            from src.backend.juego import Juego
+            from src.backend.baraja import Baraja
+            Juego._instance = None
+            Baraja._instance = None
+            self.cambiar_estado("menu")
+            return True
         
         if isinstance(resultado, dict):
             try:

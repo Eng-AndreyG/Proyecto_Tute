@@ -10,6 +10,7 @@ class CartaUI:
         self.alto = 150
         self.visible = visible
         self.seleccionada = False
+        self.rotacion = 0  # Ángulo de rotación en grados
         self.imagen = self._cargar_imagen()
 
     def _mapear_valor_archivo(self, valor: str) -> str:
@@ -66,6 +67,19 @@ class CartaUI:
                 self.y <= pos[1] <= self.y + self.alto)
 
     def dibujar(self, pantalla):
-        pantalla.blit(self.imagen, (self.x, self.y))
+        imagen_a_dibujar = self.imagen
+        
+        # Aplicar rotación si es necesario
+        if self.rotacion != 0:
+            imagen_a_dibujar = pygame.transform.rotate(self.imagen, self.rotacion)
+            # Ajustar posición para centrar la imagen rotada
+            rect_original = self.imagen.get_rect()
+            rect_rotado = imagen_a_dibujar.get_rect()
+            offset_x = (rect_original.width - rect_rotado.width) // 2
+            offset_y = (rect_original.height - rect_rotado.height) // 2
+            pantalla.blit(imagen_a_dibujar, (self.x + offset_x, self.y + offset_y))
+        else:
+            pantalla.blit(imagen_a_dibujar, (self.x, self.y))
+            
         if self.seleccionada:
             pygame.draw.rect(pantalla, (255, 215, 0), (self.x, self.y, self.ancho, self.alto), 3)

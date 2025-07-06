@@ -21,6 +21,7 @@ class Juego:
         self.jugador_humano = JugadorHumano("Humano")
         self.jugador_ia = JugadorIA("medio")
         self.palo_triunfo = None
+        self.carta_triunfo = None  # La carta física de triunfo
         self.baza_actual = Baza()
         self._observers = []  # Inicializar la lista de observadores
 
@@ -41,14 +42,34 @@ class Juego:
                 print(f"Error notificando a observador: {e}")
 
     def iniciar_partida(self):
+        print("=== INICIANDO PARTIDA EN BACKEND ===")
+        
+        # Limpiar estado anterior
+        self.jugador_humano.mano = []
+        self.jugador_ia.mano = []
+        
         # Inicialización básica
         self.baraja.inicializar()
         self.baraja.barajar()
+        
+        print(f"Cartas en baraja después de inicializar: {len(self.baraja.cartas)}")
+        
+        # Repartir 8 cartas a cada jugador
         self.jugador_humano.mano = self.baraja.repartir(8)
         self.jugador_ia.mano = self.baraja.repartir(8)
+        
+        print(f"Después del reparto inicial - Humano: {len(self.jugador_humano.mano)}, IA: {len(self.jugador_ia.mano)}, Baraja: {len(self.baraja.cartas)}")
 
-        # Establecer triunfo
-        self.palo_triunfo = self.baraja.cartas[-1].palo if self.baraja.cartas else "Oros"
+        # La siguiente carta determina el triunfo y se retira temporalmente para mostrarla
+        if self.baraja.cartas:
+            self.carta_triunfo = self.baraja.cartas.pop()  # Quitar la carta de triunfo de la baraja
+            self.palo_triunfo = self.carta_triunfo.palo
+            print(f"Carta de triunfo: {self.carta_triunfo.valor} de {self.carta_triunfo.palo}")
+        else:
+            self.palo_triunfo = "Oros"  # Fallback
+            self.carta_triunfo = None
+            print("No hay carta de triunfo - usando Oros como fallback")
+            
         if hasattr(self.jugador_ia.estrategia, 'actualizar_triunfo'):
             self.jugador_ia.estrategia.actualizar_triunfo(self.palo_triunfo)
 
